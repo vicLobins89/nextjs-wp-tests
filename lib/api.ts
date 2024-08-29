@@ -19,6 +19,7 @@ async function fetchAPI(query = "", { variables }: Record<string, any> = {}) {
   });
 
   const json = await res.json();
+  console.log(json);
   if (json.errors) {
     console.error(json.errors);
     throw new Error("Failed to fetch API");
@@ -56,6 +57,21 @@ export async function getAllPostsWithSlug() {
     }
   `);
   return data?.posts;
+}
+
+export async function getAllPagesWithSlug() {
+  const data = await fetchAPI(`
+    {
+      pages(first: 10000, where: {notIn: "35"}) {
+        edges {
+          node {
+            slug
+          }
+        }
+      }
+    }
+  `);
+  return data?.pages;
 }
 
 export async function getAllPostsForHome(preview) {
@@ -208,4 +224,132 @@ export async function getPostAndMorePosts(slug, preview, previewData) {
   if (data.posts.edges.length > 2) data.posts.edges.pop();
 
   return data;
+}
+
+export const BLOCKS_FIELD = `
+  fragment BlocksField on Page {
+    editorBlocks {
+      __typename
+      clientId
+      name
+      parentClientId
+      renderedHtml
+      ... on CoreParagraph {
+        attributes {
+          align
+          anchor
+          backgroundColor
+          className
+          content
+          dropCap
+          style
+          textColor
+        }
+      }
+      ... on CreateBlockDynamicPostSelector {
+        attributes {
+          className
+          selectedPosts
+        }
+      }
+    }
+  }
+`;
+export async function getPageBySlug(slug, preview, previewData) {
+  const postPreview = preview && previewData?.post;
+  // The slug may be the id of an unpublished post
+  const isId = Number.isInteger(Number(slug));
+  const isSamePost = isId
+    ? Number(slug) === postPreview.id
+    : slug === postPreview.slug;
+  const isDraft = isSamePost && postPreview?.status === "draft";
+  const data = await fetchAPI(
+    `
+    query PageBySlug($id: ID!, $idType: PageIdType!) {
+      page(id: $id, idType: $idType) {
+        title
+        content
+        ...BlocksField
+      }
+    }
+    ${BLOCKS_FIELD}
+  `,
+    {
+      variables: {
+        id: isDraft ? postPreview.id : slug,
+        idType: isDraft ? "DATABASE_ID" : "URI",
+      },
+    },
+  );
+
+  // Draft posts may not have an slug
+  if (isDraft) data.page.slug = postPreview.id;
+
+  return data;
+}
+
+export async function getMenuItems(location) {
+  const data = await fetchAPI(
+    `
+    query Menu($location: MenuLocationEnum) {
+      menuItems(where: {location: $location}) {
+        edges {
+          node {
+            cssClasses
+            description
+            label
+            uri
+            parentId
+            id
+          }
+        }
+      }
+    }
+  `,
+    {
+      variables: {
+        location,
+      },
+    },
+  );
+
+  return data;
+}
+
+export async function getPostsById(postsArray) {
+  const data = await fetchAPI(
+    `
+    query PostsById($postsArray: [ID]) {
+      posts(where: {in: $postsArray}) {
+        edges {
+          node {
+            excerpt
+            featuredImage {
+              node {
+                sourceUrl(size: MEDIUM_LARGE)
+                altText
+                mediaDetails {
+                  sizes {
+                    height
+                    width
+                    name
+                  }
+                }
+              }
+            }
+            uri
+            title
+          }
+        }
+      }
+    }
+  `,
+    {
+      variables: {
+        postsArray,
+      },
+    },
+  );
+
+  return data?.posts;
 }

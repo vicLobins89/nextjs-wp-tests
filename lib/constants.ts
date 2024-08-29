@@ -1,3 +1,5 @@
+export const WORDPRESS_SITE_URL = "http://headless-demo.local"
+export const HEADLESS_SITE_URL = "http://localhost:3000"
 export const EXAMPLE_PATH = "cms-wordpress";
 export const CMS_NAME = "WordPress";
 export const CMS_URL = "https://wordpress.org";
