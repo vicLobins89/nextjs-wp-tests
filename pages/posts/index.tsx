@@ -6,6 +6,7 @@ import Intro from "../../components/intro";
 import Layout from "../../components/layout";
 import { getAllPostsForHome } from "../../lib/api";
 import { CMS_NAME } from "../../lib/constants";
+import LoadMorePost from "../../components/load-more";
 
 export default function Index({ allPosts: { edges }, preview }) {
   const morePosts = edges;
@@ -17,7 +18,8 @@ export default function Index({ allPosts: { edges }, preview }) {
       </Head>
       <Container>
         <Intro />
-        {morePosts.length > 0 && <MoreStories posts={morePosts} />}
+        <LoadMorePost />
+        {/* {morePosts.length > 0 && <MoreStories posts={morePosts} />} */}
       </Container>
     </Layout>
   );
