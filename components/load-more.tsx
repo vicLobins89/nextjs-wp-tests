@@ -60,7 +60,7 @@ export default function LoadMorePost() {
 
   const posts = data.posts.edges.map((edge) => edge.node);
   const haveMorePosts = Boolean(data?.posts?.pageInfo?.hasNextPage);
-  const categories = cats.data ? cats.data.categories.edges.map((edge) => edge.node) : {};
+  const categories = cats.data ? cats.data.categories.edges.map((edge) => edge.node) : [];
 
   return (
     <>

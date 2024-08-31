@@ -8,7 +8,7 @@ import { getAllPagesWithSlug, getPageBySlug, getMenuItems, getPostsById } from "
 
 export default function Page({ page, preview, menuItems }) {
   const { title, editorBlocks } = page;
-  console.log(page);
+  // console.log(page);
 
   return (
     <Layout preview={preview}>
@@ -17,13 +17,13 @@ export default function Page({ page, preview, menuItems }) {
       </Head>
       <Container>
         <Header items={menuItems} />
-        <article className="page">
+        <div className="page">
           {editorBlocks ? (
             editorBlocks.map((block, index) => (
               <Block block={block} key={index} />
             ))
           ) : null}
-        </article>
+        </div>
       </Container>
     </Layout>
   );
