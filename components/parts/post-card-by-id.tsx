@@ -1,7 +1,7 @@
+import { gql, useQuery } from "@apollo/client";
+import parseHtml from "../../lib/parser";
 import Image from "next/image";
 import Link from "next/link";
-import parseHtml from "../../lib/parser";
-import { gql, useQuery } from "@apollo/client";
 
 const GET_POST = gql`
 query GetPost($id: ID!) {
@@ -28,6 +28,7 @@ query GetPost($id: ID!) {
 `;
 
 export default function PostCardById({postId}) {
+  // Ensure we have the post data.
   const { data, loading, error } = useQuery(GET_POST, {
     variables: { id: postId },
     notifyOnNetworkStatusChange: true,
@@ -41,9 +42,9 @@ export default function PostCardById({postId}) {
     return <p>Loading...</p>;
   }
 
+  // Set up post vars, featured image.
   const { title, excerpt, featuredImage, uri } = data.post;
   const ftSize = {};
-
   if (featuredImage) {
     featuredImage.node.mediaDetails.sizes.map(size => {
       if (size.name === "medium_large") {
@@ -54,19 +55,24 @@ export default function PostCardById({postId}) {
   }
 
   return (
-    <Link href={uri} className="post-card">
-      <h3>{title}</h3>
-      <div className="excerpt">{parseHtml(excerpt)}</div>
-      {featuredImage &&
-        (
-          <Image
-            src={featuredImage.node.sourceUrl}
-            width={ftSize.width}
-            height={ftSize.height}
-            alt={featuredImage.node.altText}
-          />
-        )  
-      }
-    </Link>
+    <div
+      className="relative flex flex-none flex-wrap lg:flex-nowrap w-full mx-10"
+      key={title}
+    >
+      <Link href={uri} className="post-card">
+        <h3>{title}</h3>
+        <div className="excerpt">{parseHtml(excerpt)}</div>
+        {featuredImage &&
+          (
+            <Image
+              src={featuredImage.node.sourceUrl}
+              width={ftSize.width}
+              height={ftSize.height}
+              alt={featuredImage.node.altText}
+            />
+          )  
+        }
+      </Link>
+    </div>
   );
 }
