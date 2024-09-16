@@ -3,8 +3,9 @@ import DynamicPostSelectorBlock from "./blocks/dynamic-post-selector-block";
 import parseHtml from "../lib/parser";
 
 const componentMap = {
-  'core/paragraph': ParagraphBlock,
-  'create-block/dynamic-post-selector': DynamicPostSelectorBlock,
+  "core/paragraph": ParagraphBlock,
+  "create-block/dynamic-post-selector": DynamicPostSelectorBlock,
+  "clarity/posts-slider": DynamicPostSelectorBlock,
 };
 
 export default function Block({ block }) {

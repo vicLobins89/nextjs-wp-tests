@@ -252,6 +252,12 @@ export const BLOCKS_FIELD = `
           selectedPosts
         }
       }
+      ... on ClarityPostsSlider {
+        attributes {
+          className
+          customPosts
+        }
+      }
     }
   }
 `;

@@ -7,9 +7,10 @@ import '../../src/scripts/dynamic-post-selector-block';
 export default function DynamicPostSelectorBlock({
   className,
   selectedPosts,
+  customPosts,
   posts
 }) {
-  const postsArray = JSON.parse(selectedPosts);
+  const postsArray = customPosts ? JSON.parse(customPosts) : JSON.parse(selectedPosts);
 
   // Set up embla.
   const [emblaRef, embla] = useEmblaCarousel({
@@ -17,6 +18,7 @@ export default function DynamicPostSelectorBlock({
     loop: true,
     skipSnaps: false,
     inViewThreshold: 0.7,
+    container: customPosts ? 'clarity' : 'custom',
   });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -47,7 +49,9 @@ export default function DynamicPostSelectorBlock({
   }, [embla, setScrollSnaps, onSelect]);
 
   return (
-    <div className="py-12 mx-auto max-w-6xl px-5">
+    <div className={`py-12 mx-auto max-w-6xl px-5 ${
+      customPosts ? 'clarity' : 'custom'
+    }`}>
       <div className="flex justify-center items-center pb-10">
         <h2 className="text-center text-black dark:text-gray-100 text-4xl font-bold">
           Posts Slider
