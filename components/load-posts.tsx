@@ -55,17 +55,82 @@ const GET_CATS = gql`
   }
 `;
 
-// Function to update the query with the new results
 const updateQuery = (previousResult, { fetchMoreResult }) => {
   return fetchMoreResult.posts.edges.length ? fetchMoreResult : previousResult;
 };
 
-const PostList = ({ data, error, loading, fetchMore }) => {
+const updateUrl = (key, value, router) => {
+  // TODO: Updating URL appends the results..
+  router.push(
+    {
+      pathname: '/blog',
+      query: { [key]: value },
+    },
+    `/blog?${key}=${value}`,
+    { shallow: true }
+  );
+};
+
+const SearchBox = ({fetchMore}) => {
+  const [searchText, setSearchText] = useState('');
+
+  return (
+    <input
+      value={searchText}
+      placeholder="Search..."
+      onChange={e => {
+        setSearchText(e.target.value);
+        fetchMore({
+          variables: {
+            search: e.target.value,
+            after: null,
+            before: null,
+          }
+        });
+      }}
+    />
+  );
+};
+
+const TaxonomyDropdown = ({fetchMore}) => {
+  const { data, loading, error } = useQuery(GET_CATS);
+
+  if (error) {
+    return <p>Sorry, an error happened. Reload Please</p>;
+  }
+
+  if (!data && loading) {
+    return <p>Loading...</p>;
+  }
+
+  const categories = data.categories.edges ? data.categories.edges.map((edge) => edge.node) : [];
+
+  return (
+    <select
+      onChange={(event) => {
+        fetchMore({
+          variables: {
+            categoryName: event.target.value,
+            after: null,
+            before: null,
+          }
+        });
+      }}>
+      <option value="">Show All</option>
+      {categories.map(o => (
+        <option key={o.id} value={o.name}>{o.name}</option>
+      ))}
+    </select>
+  );
+};
+
+const PostList = ({ data, fetchMore }) => {
+  const router = useRouter();
   const { posts } = data;
 
   return (
     <div>
-      <h2>Post List</h2>
+      <h2 className='text-xl my-5 font-bold'>Post List</h2>
       {posts && posts.edges ? (
         <div>
           <ul>
@@ -74,15 +139,20 @@ const PostList = ({ data, error, loading, fetchMore }) => {
               return (
                 <li
                   key={node.id}
-                  dangerouslySetInnerHTML={{ __html: node.title }}
-                />
+                  className='border-solid rounded-lg px-5 py-2 my-2 border-2 border-gray-500'
+                >
+                  <Link href={`/posts/${node.slug}`}>{node.title}</Link>
+                </li>
               );
             })}
           </ul>
-          <div>
+
+          <div className="pagination flex justify-center">
             {posts.pageInfo.hasPreviousPage ? (
               <button
+                className='rounded-lg shadow-lg px-5 mx-2 py-1 border-solid border-2 border-gray-600'
                 onClick={() => {
+                  updateUrl('prev', posts.pageInfo.startCursor, router);
                   fetchMore({
                     variables: {
                       first: null,
@@ -97,9 +167,12 @@ const PostList = ({ data, error, loading, fetchMore }) => {
                 Previous
               </button>
             ) : null}
+
             {posts.pageInfo.hasNextPage ? (
               <button
+                className='rounded-lg shadow-lg px-5 mx-2 py-1 border-solid border-2 border-gray-600'
                 onClick={() => {
+                  updateUrl('next', posts.pageInfo.endCursor, router);
                   fetchMore({
                     variables: {
                       first: 5,
@@ -127,11 +200,15 @@ const LoadPosts = () => {
   const searchParams = useSearchParams();
   const prevPage = searchParams.get('prev') ?? null;
   const nextPage = searchParams.get('next') ?? null;
+  // const variables = {
+  //   first: prevPage ? null : BATCH_SIZE,
+  //   last: prevPage ? BATCH_SIZE : null,
+  //   after: nextPage,
+  //   before: prevPage
+  // };
   const variables = {
-    first: prevPage ? null : BATCH_SIZE,
-    last: prevPage ? BATCH_SIZE : null,
-    after: nextPage,
-    before: prevPage
+    first: BATCH_SIZE,
+    after: null,
   };
   const { data, error, loading, networkStatus, fetchMore } = useQuery(GET_POSTS, {
     variables,
@@ -151,12 +228,14 @@ const LoadPosts = () => {
   }
 
   return (
-    <PostList
-      error={error}
-      loading={loading}
-      data={data}
-      fetchMore={fetchMore}
-    />
+    <>
+      <SearchBox fetchMore={fetchMore} />
+      <TaxonomyDropdown fetchMore={fetchMore} />
+      <PostList
+        data={data}
+        fetchMore={fetchMore}
+      />
+    </>
   );
 };
 

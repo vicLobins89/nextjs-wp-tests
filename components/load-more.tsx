@@ -68,7 +68,7 @@ export default function LoadMorePost() {
     before: prevPage
   };
 
-  const { data, loading, error, networkStatus, fetchMore, refetch } = useQuery(GET_POSTS, {
+  const { data, loading, error, networkStatus, fetchMore } = useQuery(GET_POSTS, {
     variables,
     notifyOnNetworkStatusChange: true,
   });
@@ -99,6 +99,7 @@ export default function LoadMorePost() {
   const loadMore = (dir, cursor = null) => {
     const isPrev = dir === 'prev';
     
+    // TODO: Updating URL appends the results..
     router.push(
       {
         pathname: '/blog',
@@ -125,7 +126,7 @@ export default function LoadMorePost() {
   const hasNextPage = Boolean(data?.posts?.pageInfo?.hasNextPage);
   const hasPrevPage = Boolean(data?.posts?.pageInfo?.hasPreviousPage);
   const categories = cats.data ? cats.data.categories.edges.map((edge) => edge.node) : [];
-  const pagination = true;
+  const pagination = false;
 
   return (
     <>
