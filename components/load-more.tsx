@@ -98,16 +98,6 @@ export default function LoadMorePost() {
 
   const loadMore = (dir, cursor = null) => {
     const isPrev = dir === 'prev';
-    
-    // TODO: Updating URL appends the results..
-    router.push(
-      {
-        pathname: '/blog',
-        query: { [dir]: cursor },
-      },
-      `/blog?${dir}=${cursor}`,
-      { shallow: true }
-    );
 
     const variables = {
       first: !isPrev ? BATCH_SIZE : null,
@@ -120,6 +110,15 @@ export default function LoadMorePost() {
       variables,
       updateQuery
     });
+
+    router.push(
+      {
+        pathname: '/posts',
+        query: { [dir]: cursor },
+      },
+      `/posts?${dir}=${cursor}`,
+      { shallow: true }
+    );
   };
 
   const { posts } = data;
