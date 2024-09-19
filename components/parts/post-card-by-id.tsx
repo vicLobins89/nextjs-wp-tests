@@ -44,7 +44,10 @@ export default function PostCardById({postId}) {
 
   // Set up post vars, featured image.
   const { title, excerpt, featuredImage, uri } = data.post;
-  const ftSize = {};
+  const ftSize = {
+    width: null,
+    height: null,
+  };
   if (featuredImage) {
     featuredImage.node.mediaDetails.sizes.map(size => {
       if (size.name === "medium_large") {

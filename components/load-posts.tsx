@@ -260,8 +260,8 @@ const LoadPosts = () => {
     first: BATCH_SIZE,
     after: null,
   });
-  const [activeFilter, setFilter] = useState(null);
-  const [activeSearch, setSearch] = useState(null);
+  const [activeFilter, setFilter] = useState('');
+  const [activeSearch, setSearch] = useState('');
   
   const searchParams = useSearchParams();
   useEffect(() => {
