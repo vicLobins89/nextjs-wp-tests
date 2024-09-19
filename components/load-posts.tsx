@@ -70,37 +70,41 @@ const updateUrl = (key, value, router) => {
   );
 };
 
-const SearchBox = ({fetchMore}) => {
+const SearchBox = ({fetchMore, isSearched, onSearch, filterTerm}) => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [searchText, setSearchText] = useState(searchParams.get('search'));
+  const [searchText, setSearchText] = useState(isSearched);
 
   return (
-    <input
-      value={searchText}
-      placeholder="Search..."
-      onChange={e => {
-        setSearchText(e.target.value);
-        fetchMore({
-          variables: {
-            search: e.target.value,
-            categoryName: searchParams.get('category') ?? null,
-            first: BATCH_SIZE,
-            last: null,
-            after: null,
-            before: null,
-          }
-        });
-        updateUrl('search', e.target.value, router);
-      }}
-    />
+    <div className='max-w-md'>
+      <input
+        className='block w-full h-full p-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+        value={searchText}
+        placeholder="Search..."
+        onChange={e => {
+          setSearchText(e.target.value);
+          fetchMore({
+            variables: {
+              search: e.target.value,
+              categoryName: filterTerm,
+              first: BATCH_SIZE,
+              last: null,
+              after: null,
+              before: null,
+            }
+          });
+          onSearch(e.target.value);
+          // updateUrl('search', e.target.value, router);
+        }}
+      />
+    </div>
   );
 };
 
-const TaxonomyDropdown = ({fetchMore}) => {
+const TaxonomyDropdown = ({fetchMore, isFiltered, onFilter, searchTerm}) => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [category, setCategory] = useState(searchParams.get('category'));
+  const [category, setCategory] = useState(isFiltered);
   const { data, loading, error } = useQuery(GET_CATS);
 
   if (error) {
@@ -114,38 +118,40 @@ const TaxonomyDropdown = ({fetchMore}) => {
   const categories = data.categories.edges ? data.categories.edges.map((edge) => edge.node) : [];
 
   return (
-    <select
-      value={category}
-      onChange={(event) => {
-        setCategory(event.target.value);
-        fetchMore({
-          variables: {
-            categoryName: event.target.value,
-            search: searchParams.get('search') ?? null,
-            first: BATCH_SIZE,
-            last: null,
-            after: null,
-            before: null,
-          }
-        });
-        updateUrl('category', event.target.value, router);
-      }}>
-      <option value="">Show All</option>
-      {categories.map(o => (
-        <option key={o.id} value={o.name}>{o.name}</option>
-      ))}
-    </select>
+    <div className='max-w-lg'>
+      <select
+        className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+        value={category}
+        onChange={(event) => {
+          setCategory(event.target.value);
+          fetchMore({
+            variables: {
+              categoryName: event.target.value,
+              search: searchTerm,
+              first: BATCH_SIZE,
+              last: null,
+              after: null,
+              before: null,
+            }
+          });
+          onFilter(event.target.value);
+          // updateUrl('category', event.target.value, router);
+        }}>
+        <option value="">Show All</option>
+        {categories.map(o => (
+          <option key={o.id} value={o.name}>{o.name}</option>
+        ))}
+      </select>
+    </div>
   );
 };
 
-const PostList = ({ data, fetchMore }) => {
+const PostList = ({ data, fetchMore, filterTerm, searchTerm }) => {
   const router = useRouter();
   const { posts } = data;
   const { query } = router;
   delete query.next;
   delete query.prev;
-
-  console.log(query);
 
   return (
     <div>
@@ -169,7 +175,7 @@ const PostList = ({ data, fetchMore }) => {
           <div className="pagination flex justify-center">
             {posts.pageInfo.hasPreviousPage ? (
               <>
-                <Link
+                {/* <Link
                   className='rounded-lg shadow-lg px-5 mx-2 py-1 border-solid border-2 border-gray-600'
                   href={{
                     pathname: router.pathname,
@@ -181,8 +187,8 @@ const PostList = ({ data, fetchMore }) => {
                   onClick={() => {
                     fetchMore();
                   }}
-                >Previous</Link>
-                {/* <button
+                >Previous</Link> */}
+                <button
                   className='rounded-lg shadow-lg px-5 mx-2 py-1 border-solid border-2 border-gray-600'
                   onClick={() => {
                     fetchMore({
@@ -190,21 +196,23 @@ const PostList = ({ data, fetchMore }) => {
                         first: null,
                         after: null,
                         last: BATCH_SIZE,
-                        before: posts.pageInfo.startCursor || null
+                        before: posts.pageInfo.startCursor || null,
+                        categoryName: filterTerm,
+                        search: searchTerm,
                       },
                       updateQuery
                     });
-                    updateUrl('prev', posts.pageInfo.startCursor, router);
+                    // updateUrl('prev', posts.pageInfo.startCursor, router);
                   }}
                 >
                   Previous
-                </button> */}
+                </button>
               </>
             ) : null}
 
             {posts.pageInfo.hasNextPage ? (
               <>
-                <Link
+                {/* <Link
                   className='rounded-lg shadow-lg px-5 mx-2 py-1 border-solid border-2 border-gray-600'
                   href={{
                     pathname: router.pathname,
@@ -216,8 +224,8 @@ const PostList = ({ data, fetchMore }) => {
                   onClick={() => {
                     fetchMore();
                   }}
-                >Next</Link>
-                {/* <button
+                >Next</Link> */}
+                <button
                   className='rounded-lg shadow-lg px-5 mx-2 py-1 border-solid border-2 border-gray-600'
                   onClick={() => {
                     fetchMore({
@@ -225,15 +233,17 @@ const PostList = ({ data, fetchMore }) => {
                         first: BATCH_SIZE,
                         after: posts.pageInfo.endCursor || null,
                         last: null,
-                        before: null
+                        before: null,
+                        categoryName: filterTerm,
+                        search: searchTerm,
                       },
                       updateQuery
                     });
-                    updateUrl('next', posts.pageInfo.endCursor, router);
+                    // updateUrl('next', posts.pageInfo.endCursor, router);
                   }}
                 >
                   Next
-                </button> */}
+                </button>
               </>
             ) : null}
           </div>
@@ -250,30 +260,21 @@ const LoadPosts = () => {
     first: BATCH_SIZE,
     after: null,
   });
+  const [activeFilter, setFilter] = useState(null);
+  const [activeSearch, setSearch] = useState(null);
   
   const searchParams = useSearchParams();
   useEffect(() => {
     const prevPage = searchParams.get('prev') ?? null;
     const nextPage = searchParams.get('next') ?? null;
     const variables = {
-      first: BATCH_SIZE,
-      after: null,
-      last: null,
-      before: null,
+      first: prevPage ? null : BATCH_SIZE,
+      after: nextPage,
+      last: prevPage ? BATCH_SIZE : null,
+      before: prevPage,
     };
 
-    if (prevPage) {
-      variables.first = null;
-      variables.after = null;
-      variables.last = BATCH_SIZE;
-      variables.before = prevPage;
-      setFetchVars(variables);
-    }
-    if (nextPage) {
-      variables.first = BATCH_SIZE;
-      variables.after = nextPage;
-      variables.last = null;
-      variables.before = null;
+    if (prevPage || nextPage) {
       setFetchVars(variables);
     }
   }, [searchParams]);
@@ -297,12 +298,30 @@ const LoadPosts = () => {
 
   return (
     <>
-      <SearchBox fetchMore={fetchMore} />
-      <TaxonomyDropdown fetchMore={fetchMore} />
+      <div className="flex justify-between align-middle max-w-fit gap-2">
+        <SearchBox
+          fetchMore={fetchMore}
+          isSearched={activeSearch}
+          onSearch={value => setSearch(value)}
+          filterTerm={activeFilter}
+        />
+        <TaxonomyDropdown
+          fetchMore={fetchMore}
+          isFiltered={activeFilter}
+          onFilter={value => setFilter(value)}
+          searchTerm={activeSearch}
+        />
+      </div>
       <PostList
         data={data}
         fetchMore={fetchMore}
+        filterTerm={activeFilter}
+        searchTerm={activeSearch}
       />
+      {/* <PostList
+        data={data}
+        fetchMore={fetchMore}
+      /> */}
     </>
   );
 };
